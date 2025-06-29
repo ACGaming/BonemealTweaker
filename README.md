@@ -1,0 +1,44 @@
+## Bonemeal Tweaker
+
+###### Not bad to the bone!
+
+[![Requires MixinBooter](https://img.shields.io/badge/Requires-MixinBooter-3498db.svg?labelColor=34495e&style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/mixin-booter)
+
+A simple mod that modifies the way plants are spawned when bonemeal is applied on blocks.
+
+Configuration is handled by JSON-based config files per block in the `config/bonemealtweaker` directory. Example for the vanilla grass block (`vanilla_grass.json`):
+
+```json
+{
+  "block": "minecraft:grass",
+  "iterations": 128,
+  "biomes": [
+    "minecraft:plains",
+    "minecraft:forest"
+  ],
+  "dimensions": [
+    0
+  ],
+  "spawnBlocks": [
+    {
+      "block": "minecraft:tallgrass[type=tall_grass]",
+      "weight": 60
+    },
+    {
+      "block": "flowerEntry",
+      "weight": 20
+    }
+  ]
+}
+```
+
+- `block`: The `IGrowable` block to apply custom bonemeal logic on
+- `iterations`: The density of blocks/plants to spawn
+- `biomes`: An optional list of whitelisted biomes, can be left empty to allow any
+- `dimensions`: An optional list of whitelisted dimensions, can be left empty to allow any
+- `spawnBlocks`: An array of blocks/plants by resource location to spawn on the specified `block`, "flowerEntry" picks a random flower
+- `weight`: The relative chance to spawn across all `spawnBlocks` entries
+
+---
+
+This mod was commissioned for Minecraft 1.12.2.

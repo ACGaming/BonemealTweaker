@@ -1,0 +1,12 @@
+[
+  {
+    "modid": "bonemealtweaker",
+    "name": "Bonemeal Tweaker",
+    "description": "Not bad to the bone!",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "https://github.com/ACGaming/BonemealTweaker",
+    "authorList": ["ACGaming"],
+    "credits": "xkforce for commissioning"
+  }
+]
