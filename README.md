@@ -2,8 +2,6 @@
 
 ###### Not bad to the bone!
 
-[![Requires MixinBooter](https://img.shields.io/badge/Requires-MixinBooter-3498db.svg?labelColor=34495e&style=for-the-badge)](https://www.curseforge.com/minecraft/mc-mods/mixin-booter)
-
 A simple mod that modifies the way plants are spawned when bonemeal is applied on blocks.
 
 Configuration is handled by JSON-based config files per block in the `config/bonemealtweaker` directory. Example for the vanilla grass block (`vanilla_grass.json`):
