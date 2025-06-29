@@ -8,6 +8,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -41,13 +43,13 @@ public class BonemealTweaker
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBonemeal(BonemealEvent event)
     {
-        if (applyCustomBonemeal(event.getWorld(), event.getPos(), event.getBlock()))
+        if (applyCustomBonemeal(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack()))
         {
             event.setCanceled(true);
         }
     }
 
-    public static boolean applyCustomBonemeal(World world, BlockPos pos, IBlockState state)
+    public static boolean applyCustomBonemeal(World world, BlockPos pos, IBlockState state, EntityPlayer placer, ItemStack stack)
     {
         if (world.isRemote) return false;
         ResourceLocation blockId = state.getBlock().getRegistryName();
@@ -87,7 +89,9 @@ public class BonemealTweaker
                         else if (spawnState != null && spawnState.getBlock().canPlaceBlockAt(world, blockpos1))
                         {
                             world.setBlockState(blockpos1, spawnState, 3);
+                            spawnState.getBlock().onBlockPlacedBy(world, blockpos1, spawnState, placer, stack);
                             world.notifyBlockUpdate(blockpos1, world.getBlockState(blockpos1), spawnState, 3);
+                            world.notifyBlockUpdate(blockpos1.up(), world.getBlockState(blockpos1.up()), spawnState, 3);
                         }
                     }
                     break;
