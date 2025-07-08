@@ -1,20 +1,23 @@
 package mod.acgaming.bonemealtweaker.config.json;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ResourceLocation;
 
 import java.util.List;
 import java.util.Random;
 
 public class BlockConfig
 {
+    private final ResourceLocation replaceBlock;
     private final int iterations;
     private final List<String> biomes;
     private final List<Integer> dimensions;
     private final List<SpawnBlock> spawnBlocks;
     private final int totalWeight;
 
-    public BlockConfig(int iterations, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
+    public BlockConfig(ResourceLocation replaceBlock, int iterations, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
     {
+        this.replaceBlock = replaceBlock;
         this.iterations = iterations;
         this.biomes = biomes;
         this.dimensions = dimensions;
@@ -35,6 +38,11 @@ public class BlockConfig
             }
         }
         return null;
+    }
+
+    public ResourceLocation getReplaceBlock()
+    {
+        return replaceBlock;
     }
 
     public int getIterations()

@@ -76,7 +76,8 @@ public class BonemealTweaker
             {
                 if (j >= i / 16)
                 {
-                    if (world.isAirBlock(blockpos1))
+                    IBlockState targetState = world.getBlockState(blockpos1);
+                    if (config.getReplaceBlock() == null ? world.isAirBlock(blockpos1) : targetState.getBlock().getRegistryName().equals(config.getReplaceBlock()))
                     {
                         IBlockState spawnState = config.getRandomBlockState(rand);
                         if (FLOWER_ENTRY.equals(config.getSpawnBlocks().stream().filter(b -> b.getBlockState() == spawnState).map(SpawnBlock::getBlock).findFirst().orElse(null)))
@@ -121,6 +122,7 @@ public class BonemealTweaker
                 String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 JsonObject config = GSON.fromJson(json, JsonObject.class);
                 String blockName = config.get("block").getAsString();
+                ResourceLocation replaceBlock = config.has("replaceBlock") ? new ResourceLocation(config.get("replaceBlock").getAsString()) : null;
                 int iterations = config.get("iterations").getAsInt();
                 List<String> biomes = new ArrayList<>();
                 config.get("biomes").getAsJsonArray().forEach(e -> biomes.add(e.getAsString()));
@@ -133,7 +135,7 @@ public class BonemealTweaker
                     int weight = obj.get("weight").getAsInt();
                     spawnBlocks.add(new SpawnBlock(block, weight));
                 });
-                BLOCK_CONFIGS.put(new ResourceLocation(blockName), new BlockConfig(iterations, biomes, dimensions, spawnBlocks));
+                BLOCK_CONFIGS.put(new ResourceLocation(blockName), new BlockConfig(replaceBlock, iterations, biomes, dimensions, spawnBlocks));
             }
             catch (IOException | JsonParseException e)
             {
