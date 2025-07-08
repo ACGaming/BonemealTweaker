@@ -1,4 +1,4 @@
-package mod.acgaming.bonemealtweaker;
+package mod.acgaming.bonemealtweaker.config.json;
 
 import net.minecraft.block.state.IBlockState;
 

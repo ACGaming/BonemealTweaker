@@ -1,8 +1,10 @@
-package mod.acgaming.bonemealtweaker;
+package mod.acgaming.bonemealtweaker.config.json;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
+
+import mod.acgaming.bonemealtweaker.BonemealTweaker;
 
 public class SpawnBlock
 {

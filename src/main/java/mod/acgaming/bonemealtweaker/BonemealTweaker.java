@@ -24,6 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import mod.acgaming.bonemealtweaker.config.BTConfig;
+import mod.acgaming.bonemealtweaker.config.json.BlockConfig;
+import mod.acgaming.bonemealtweaker.config.json.SpawnBlock;
 
 @Mod.EventBusSubscriber(modid = BonemealTweaker.MOD_ID)
 @Mod(modid = BonemealTweaker.MOD_ID, name = BonemealTweaker.NAME, version = BonemealTweaker.VERSION, acceptedMinecraftVersions = BonemealTweaker.ACCEPTED_VERSIONS)
@@ -43,7 +46,7 @@ public class BonemealTweaker
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBonemeal(BonemealEvent event)
     {
-        if (applyCustomBonemeal(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack()))
+        if (applyCustomBonemeal(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack()) || BTConfig.exclusiveMode)
         {
             event.setCanceled(true);
         }
