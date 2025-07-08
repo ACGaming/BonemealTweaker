@@ -110,18 +110,7 @@ public class BonemealTweaker
         return true;
     }
 
-    @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event)
-    {
-        configDir = new File(event.getModConfigurationDirectory(), MOD_ID);
-        if (!configDir.exists())
-        {
-            configDir.mkdirs();
-        }
-        loadConfigs();
-    }
-
-    private void loadConfigs()
+    public static void loadConfigs()
     {
         File[] configFiles = configDir.listFiles((dir, name) -> name.endsWith(".json"));
         if (configFiles == null) return;
@@ -151,5 +140,16 @@ public class BonemealTweaker
                 LOGGER.error("Failed to load config: {}", file.getName(), e);
             }
         }
+    }
+
+    @Mod.EventHandler
+    public void preInit(FMLPreInitializationEvent event)
+    {
+        configDir = new File(event.getModConfigurationDirectory(), MOD_ID);
+        if (!configDir.exists())
+        {
+            configDir.mkdirs();
+        }
+        loadConfigs();
     }
 }
