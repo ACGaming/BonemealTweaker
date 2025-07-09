@@ -47,7 +47,11 @@ public class BonemealTweaker
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBonemeal(BonemealEvent event)
     {
-        if (applyCustomBonemeal(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack()) || BTConfig.exclusiveMode)
+        if (applyCustomBonemeal(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack()))
+        {
+            event.setResult(Event.Result.ALLOW);
+        }
+        else if (BTConfig.exclusiveMode)
         {
             event.setCanceled(true);
         }
