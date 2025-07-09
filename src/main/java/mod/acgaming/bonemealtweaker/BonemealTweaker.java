@@ -17,6 +17,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.event.entity.player.BonemealEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -39,7 +40,7 @@ public class BonemealTweaker
     public static final Logger LOGGER = LogManager.getLogger(NAME);
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Map<ResourceLocation, BlockConfig> BLOCK_CONFIGS = new HashMap<>();
+    private static final Map<ResourceLocation, List<BlockConfig>> BLOCK_CONFIGS = new HashMap<>();
     private static final String FLOWER_ENTRY = "flowerEntry";
     private static File configDir;
 
@@ -55,60 +56,89 @@ public class BonemealTweaker
     public static boolean applyCustomBonemeal(World world, BlockPos pos, IBlockState state, EntityPlayer placer, ItemStack stack)
     {
         if (world.isRemote) return false;
-        ResourceLocation blockId = state.getBlock().getRegistryName();
-        BlockConfig config = BLOCK_CONFIGS.get(blockId);
-        if (config == null) return false;
-
-        Biome biome = world.getBiome(pos);
-        int dimension = world.provider.getDimension();
-        if ((!config.getBiomes().isEmpty() && !config.getBiomes().contains(biome.getRegistryName().toString())) || (!config.getDimensions().isEmpty() && !config.getDimensions().contains(dimension)))
+        ResourceLocation blockRL = state.getBlock().getRegistryName();
+        List<BlockConfig> configs = BLOCK_CONFIGS.get(blockRL);
+        if (configs == null)
         {
+            LOGGER.debug("No configs found for block: {}", blockRL);
             return false;
         }
-
-        Random rand = world.rand;
-        BlockPos blockpos = pos.up();
-        for (int i = 0; i < config.getIterations(); ++i)
+        Biome biome = world.getBiome(pos);
+        ResourceLocation biomeName = biome.getRegistryName();
+        int dimension = world.provider.getDimension();
+        IBlockState targetState = world.getBlockState(pos.up());
+        for (BlockConfig config : configs)
         {
-            BlockPos blockpos1 = blockpos;
-            int j = 0;
-            while (true)
+            if (!config.getBiomes().isEmpty())
             {
-                if (j >= i / 16)
+                if (biomeName == null)
                 {
-                    IBlockState targetState = world.getBlockState(blockpos1);
-                    if (config.getReplaceBlock() == null ? world.isAirBlock(blockpos1) : targetState.getBlock().getRegistryName().equals(config.getReplaceBlock()))
+                    LOGGER.debug("Biome at {} has no valid registry name", pos);
+                    continue;
+                }
+                String biomeNameStr = biomeName.toString();
+                if (!config.getBiomes().contains(biomeNameStr))
+                {
+                    LOGGER.debug("Biome '{}' at {} is not in allowed biomes list: {}", biomeNameStr, pos, config.getBiomes());
+                    continue;
+                }
+            }
+            if (!config.getDimensions().isEmpty() && !config.getDimensions().contains(dimension))
+            {
+                LOGGER.debug("Dimension {} is not in allowed dimensions list: {}", dimension, config.getDimensions());
+                continue;
+            }
+            if (!(config.getReplaceBlock() == null ? world.isAirBlock(pos.up()) : targetState.getBlock().getRegistryName().equals(config.getReplaceBlock())))
+            {
+                LOGGER.debug("Target block {} at {} does not match replaceBlock: {}", targetState.getBlock().getRegistryName(), pos.up(), config.getReplaceBlock());
+                continue;
+            }
+            Random rand = world.rand;
+            BlockPos blockpos = pos.up();
+            for (int i = 0; i < config.getIterations(); ++i)
+            {
+                BlockPos blockpos1 = blockpos;
+                int j = 0;
+                while (true)
+                {
+                    if (j >= i / 16)
                     {
-                        IBlockState spawnState = config.getRandomBlockState(rand);
-                        if (FLOWER_ENTRY.equals(config.getSpawnBlocks().stream().filter(b -> b.getBlockState() == spawnState).map(SpawnBlock::getBlock).findFirst().orElse(null)))
+                        IBlockState currentState = world.getBlockState(blockpos1);
+                        if (config.getReplaceBlock() == null ? world.isAirBlock(blockpos1) : currentState.getBlock().getRegistryName().equals(config.getReplaceBlock()))
                         {
-                            IBlockState oldState = world.getBlockState(blockpos1);
-                            biome.plantFlower(world, rand, blockpos1);
-                            IBlockState newState = world.getBlockState(blockpos1);
-                            if (newState != oldState)
+                            IBlockState spawnState = config.getRandomBlockState(rand);
+                            if (FLOWER_ENTRY.equals(config.getSpawnBlocks().stream().filter(b -> b.getBlockState() == spawnState).map(SpawnBlock::getBlock).findFirst().orElse(null)))
                             {
-                                world.notifyBlockUpdate(blockpos1, oldState, newState, 3);
+                                IBlockState oldState = world.getBlockState(blockpos1);
+                                biome.plantFlower(world, rand, blockpos1);
+                                IBlockState newState = world.getBlockState(blockpos1);
+                                if (newState != oldState)
+                                {
+                                    world.notifyBlockUpdate(blockpos1, oldState, newState, 3);
+                                }
+                            }
+                            else if (spawnState != null && spawnState.getBlock().canPlaceBlockAt(world, blockpos1))
+                            {
+                                world.setBlockState(blockpos1, spawnState, 3);
+                                spawnState.getBlock().onBlockPlacedBy(world, blockpos1, spawnState, placer, stack);
+                                world.notifyBlockUpdate(blockpos1, world.getBlockState(blockpos1), spawnState, 3);
+                                world.notifyBlockUpdate(blockpos1.up(), world.getBlockState(blockpos1.up()), spawnState, 3);
                             }
                         }
-                        else if (spawnState != null && spawnState.getBlock().canPlaceBlockAt(world, blockpos1))
-                        {
-                            world.setBlockState(blockpos1, spawnState, 3);
-                            spawnState.getBlock().onBlockPlacedBy(world, blockpos1, spawnState, placer, stack);
-                            world.notifyBlockUpdate(blockpos1, world.getBlockState(blockpos1), spawnState, 3);
-                            world.notifyBlockUpdate(blockpos1.up(), world.getBlockState(blockpos1.up()), spawnState, 3);
-                        }
+                        break;
                     }
-                    break;
+                    blockpos1 = blockpos1.add(rand.nextInt(3) - 1, (rand.nextInt(3) - 1) * rand.nextInt(3) / 2, rand.nextInt(3) - 1);
+                    if (world.getBlockState(blockpos1.down()).getBlock() != state.getBlock() || world.getBlockState(blockpos1).isNormalCube())
+                    {
+                        break;
+                    }
+                    ++j;
                 }
-                blockpos1 = blockpos1.add(rand.nextInt(3) - 1, (rand.nextInt(3) - 1) * rand.nextInt(3) / 2, rand.nextInt(3) - 1);
-                if (world.getBlockState(blockpos1.down()).getBlock() != state.getBlock() || world.getBlockState(blockpos1).isNormalCube())
-                {
-                    break;
-                }
-                ++j;
             }
+            return true;
         }
-        return true;
+        LOGGER.debug("No matching config found for block: {}, biome: {}, dimension: {}, replaceBlock: {}", blockRL, biomeName, dimension, targetState.getBlock().getRegistryName());
+        return false;
     }
 
     public static void loadConfigs()
@@ -122,6 +152,7 @@ public class BonemealTweaker
                 String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 JsonObject config = GSON.fromJson(json, JsonObject.class);
                 String blockName = config.get("block").getAsString();
+                ResourceLocation blockRL = new ResourceLocation(blockName);
                 ResourceLocation replaceBlock = config.has("replaceBlock") ? new ResourceLocation(config.get("replaceBlock").getAsString()) : null;
                 int iterations = config.get("iterations").getAsInt();
                 List<String> biomes = new ArrayList<>();
@@ -135,7 +166,7 @@ public class BonemealTweaker
                     int weight = obj.get("weight").getAsInt();
                     spawnBlocks.add(new SpawnBlock(block, weight));
                 });
-                BLOCK_CONFIGS.put(new ResourceLocation(blockName), new BlockConfig(replaceBlock, iterations, biomes, dimensions, spawnBlocks));
+                BLOCK_CONFIGS.computeIfAbsent(blockRL, k -> new ArrayList<>()).add(new BlockConfig(replaceBlock, iterations, biomes, dimensions, spawnBlocks));
             }
             catch (IOException | JsonParseException e)
             {
