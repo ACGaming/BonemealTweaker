@@ -143,6 +143,7 @@ public class BonemealTweaker
 
     public static void loadConfigs()
     {
+        BLOCK_CONFIGS.clear();
         File[] configFiles = configDir.listFiles((dir, name) -> name.endsWith(".json"));
         if (configFiles == null) return;
         for (File file : configFiles)
