@@ -51,7 +51,7 @@ public class BonemealTweaker
         {
             event.setResult(Event.Result.ALLOW);
         }
-        else if (BTConfig.exclusiveMode)
+        else if (BTConfig.exclusiveMode && BLOCK_CONFIGS.containsKey(event.getBlock().getBlock().getRegistryName()))
         {
             event.setCanceled(true);
         }
