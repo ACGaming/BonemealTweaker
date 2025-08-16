@@ -14,22 +14,22 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.event.entity.player.BonemealEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import mod.acgaming.bonemealtweaker.config.BTConfig;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import mod.acgaming.bonemealtweaker.config.json.BlockConfig;
 import mod.acgaming.bonemealtweaker.config.json.SpawnBlock;
+import mod.acgaming.bonemealtweaker.gen.BTWorldGenerator;
 
-@Mod.EventBusSubscriber(modid = BonemealTweaker.MOD_ID)
 @Mod(modid = BonemealTweaker.MOD_ID, name = BonemealTweaker.NAME, version = BonemealTweaker.VERSION, acceptedMinecraftVersions = BonemealTweaker.ACCEPTED_VERSIONS)
 public class BonemealTweaker
 {
@@ -39,25 +39,12 @@ public class BonemealTweaker
     public static final String ACCEPTED_VERSIONS = "[1.12.2]";
     public static final Logger LOGGER = LogManager.getLogger(NAME);
 
+    public static final Map<ResourceLocation, List<BlockConfig>> BLOCK_CONFIGS = new Object2ObjectOpenHashMap<>();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Map<ResourceLocation, List<BlockConfig>> BLOCK_CONFIGS = new HashMap<>();
     private static final String FLOWER_ENTRY = "flowerEntry";
     private static File configDir;
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onBonemeal(BonemealEvent event)
-    {
-        if (applyCustomBonemeal(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack()))
-        {
-            event.setResult(Event.Result.ALLOW);
-        }
-        else if (BTConfig.exclusiveMode && BLOCK_CONFIGS.containsKey(event.getBlock().getBlock().getRegistryName()))
-        {
-            event.setCanceled(true);
-        }
-    }
-
-    public static boolean applyCustomBonemeal(World world, BlockPos pos, IBlockState state, EntityPlayer placer, ItemStack stack)
+    public static boolean applyBlockPlacement(World world, BlockPos pos, IBlockState state, EntityPlayer placer, ItemStack stack, boolean isBonemeal)
     {
         if (world.isRemote) return false;
         ResourceLocation blockRL = state.getBlock().getRegistryName();
@@ -73,6 +60,8 @@ public class BonemealTweaker
         IBlockState targetState = world.getBlockState(pos.up());
         for (BlockConfig config : configs)
         {
+            if (isBonemeal && !config.getApplyMode().isBonemeal()) continue;
+            if (!isBonemeal && !config.getApplyMode().isSurface()) continue;
             if (!config.getBiomes().isEmpty())
             {
                 if (biomeName == null)
@@ -160,6 +149,17 @@ public class BonemealTweaker
                 ResourceLocation blockRL = new ResourceLocation(blockName);
                 ResourceLocation replaceBlock = config.has("replaceBlock") ? new ResourceLocation(config.get("replaceBlock").getAsString()) : null;
                 int iterations = config.get("iterations").getAsInt();
+                String applyModeStr = config.has("applyMode") ? config.get("applyMode").getAsString().toUpperCase() : "BONEMEAL";
+                BlockConfig.ApplyMode applyMode;
+                try
+                {
+                    applyMode = BlockConfig.ApplyMode.valueOf(applyModeStr);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    LOGGER.error("Invalid applyMode '{}' in config {}, defaulting to BONEMEAL", applyModeStr, file.getName());
+                    applyMode = BlockConfig.ApplyMode.BONEMEAL;
+                }
                 List<String> biomes = new ArrayList<>();
                 config.get("biomes").getAsJsonArray().forEach(e -> biomes.add(e.getAsString()));
                 List<Integer> dimensions = new ArrayList<>();
@@ -171,7 +171,7 @@ public class BonemealTweaker
                     int weight = obj.get("weight").getAsInt();
                     spawnBlocks.add(new SpawnBlock(block, weight));
                 });
-                BLOCK_CONFIGS.computeIfAbsent(blockRL, k -> new ArrayList<>()).add(new BlockConfig(replaceBlock, iterations, biomes, dimensions, spawnBlocks));
+                BLOCK_CONFIGS.computeIfAbsent(blockRL, k -> new ArrayList<>()).add(new BlockConfig(replaceBlock, iterations, applyMode, biomes, dimensions, spawnBlocks));
             }
             catch (IOException | JsonParseException e)
             {
@@ -189,5 +189,6 @@ public class BonemealTweaker
             configDir.mkdirs();
         }
         loadConfigs();
+        GameRegistry.registerWorldGenerator(new BTWorldGenerator(), 100);
     }
 }

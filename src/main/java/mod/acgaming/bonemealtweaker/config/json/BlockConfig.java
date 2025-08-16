@@ -10,15 +10,17 @@ public class BlockConfig
 {
     private final ResourceLocation replaceBlock;
     private final int iterations;
+    private final ApplyMode applyMode;
     private final List<String> biomes;
     private final List<Integer> dimensions;
     private final List<SpawnBlock> spawnBlocks;
     private final int totalWeight;
 
-    public BlockConfig(ResourceLocation replaceBlock, int iterations, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
+    public BlockConfig(ResourceLocation replaceBlock, int iterations, ApplyMode applyMode, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
     {
         this.replaceBlock = replaceBlock;
         this.iterations = iterations;
+        this.applyMode = applyMode;
         this.biomes = biomes;
         this.dimensions = dimensions;
         this.spawnBlocks = spawnBlocks;
@@ -50,6 +52,11 @@ public class BlockConfig
         return iterations;
     }
 
+    public ApplyMode getApplyMode()
+    {
+        return applyMode;
+    }
+
     public List<String> getBiomes()
     {
         return biomes;
@@ -63,5 +70,20 @@ public class BlockConfig
     public List<SpawnBlock> getSpawnBlocks()
     {
         return spawnBlocks;
+    }
+
+    public enum ApplyMode
+    {
+        BONEMEAL, SURFACE, BOTH;
+
+        public boolean isBonemeal()
+        {
+            return this == BONEMEAL || this == BOTH;
+        }
+
+        public boolean isSurface()
+        {
+            return this == SURFACE || this == BOTH;
+        }
     }
 }
