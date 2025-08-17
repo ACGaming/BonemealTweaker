@@ -34,17 +34,20 @@ public class BTWorldGenerator implements IWorldGenerator
                 if (!config.getApplyMode().isSurface()) continue;
                 if (!config.getBiomes().isEmpty() && !config.getBiomes().contains(biome.getRegistryName().toString())) continue;
                 if (!config.getDimensions().isEmpty() && !config.getDimensions().contains(dimension)) continue;
-                int x = chunkXPos + random.nextInt(16) + 8;
-                int z = chunkZPos + random.nextInt(16) + 8;
-                BlockPos topPos = world.getHeight(new BlockPos(x, 0, z));
-                BlockPos belowPos = topPos.down();
-                IBlockState belowState = world.getBlockState(belowPos);
-                if (belowState.getBlock().getRegistryName().equals(blockRL))
+                for (int i = 0; i < config.getGenDensity(); i++)
                 {
-                    IBlockState targetState = world.getBlockState(topPos);
-                    if (config.getReplaceBlock() == null ? world.isAirBlock(topPos) : targetState.getBlock().getRegistryName().equals(config.getReplaceBlock()))
+                    int x = chunkXPos + random.nextInt(16) + 8;
+                    int z = chunkZPos + random.nextInt(16) + 8;
+                    BlockPos topPos = world.getHeight(new BlockPos(x, 0, z));
+                    BlockPos belowPos = topPos.down();
+                    IBlockState belowState = world.getBlockState(belowPos);
+                    if (belowState.getBlock().getRegistryName().equals(blockRL))
                     {
-                        BonemealTweaker.applyBlockPlacement(world, belowPos, belowState, null, ItemStack.EMPTY, false);
+                        IBlockState targetState = world.getBlockState(topPos);
+                        if (config.getReplaceBlock() == null ? world.isAirBlock(topPos) : targetState.getBlock().getRegistryName().equals(config.getReplaceBlock()))
+                        {
+                            BonemealTweaker.applyBlockPlacement(world, belowPos, belowState, null, ItemStack.EMPTY, false);
+                        }
                     }
                 }
             }

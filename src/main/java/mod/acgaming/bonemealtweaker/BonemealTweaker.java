@@ -160,6 +160,7 @@ public class BonemealTweaker
                     LOGGER.error("Invalid applyMode '{}' in config {}, defaulting to BONEMEAL", applyModeStr, file.getName());
                     applyMode = BlockConfig.ApplyMode.BONEMEAL;
                 }
+                int genDensity = applyMode == BlockConfig.ApplyMode.BONEMEAL ? 0 : config.get("genDensity").getAsInt();
                 List<String> biomes = new ArrayList<>();
                 config.get("biomes").getAsJsonArray().forEach(e -> biomes.add(e.getAsString()));
                 List<Integer> dimensions = new ArrayList<>();
@@ -171,7 +172,7 @@ public class BonemealTweaker
                     int weight = obj.get("weight").getAsInt();
                     spawnBlocks.add(new SpawnBlock(block, weight));
                 });
-                BLOCK_CONFIGS.computeIfAbsent(blockRL, k -> new ArrayList<>()).add(new BlockConfig(replaceBlock, iterations, applyMode, biomes, dimensions, spawnBlocks));
+                BLOCK_CONFIGS.computeIfAbsent(blockRL, k -> new ArrayList<>()).add(new BlockConfig(replaceBlock, iterations, applyMode, genDensity, biomes, dimensions, spawnBlocks));
             }
             catch (IOException | JsonParseException e)
             {

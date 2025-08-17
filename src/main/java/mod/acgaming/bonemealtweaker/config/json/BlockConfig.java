@@ -11,16 +11,18 @@ public class BlockConfig
     private final ResourceLocation replaceBlock;
     private final int iterations;
     private final ApplyMode applyMode;
+    private final int genDensity;
     private final List<String> biomes;
     private final List<Integer> dimensions;
     private final List<SpawnBlock> spawnBlocks;
     private final int totalWeight;
 
-    public BlockConfig(ResourceLocation replaceBlock, int iterations, ApplyMode applyMode, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
+    public BlockConfig(ResourceLocation replaceBlock, int iterations, ApplyMode applyMode, int genDensity, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
     {
         this.replaceBlock = replaceBlock;
         this.iterations = iterations;
         this.applyMode = applyMode;
+        this.genDensity = genDensity;
         this.biomes = biomes;
         this.dimensions = dimensions;
         this.spawnBlocks = spawnBlocks;
@@ -55,6 +57,11 @@ public class BlockConfig
     public ApplyMode getApplyMode()
     {
         return applyMode;
+    }
+
+    public int getGenDensity()
+    {
+        return genDensity;
     }
 
     public List<String> getBiomes()

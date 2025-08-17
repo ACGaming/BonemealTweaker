@@ -12,6 +12,7 @@ Configuration is handled by JSON-based config files per block in the `config/bon
   "replaceBlock": "minecraft:air",
   "iterations": 128,
   "applyMode": "BONEMEAL",
+  "genDensity": 0,
   "biomes": [
     "minecraft:plains",
     "minecraft:forest"
@@ -36,6 +37,7 @@ Configuration is handled by JSON-based config files per block in the `config/bon
 - `replaceBlock`: The block to be replaced with foliage (above `block`), can be omitted to replace air
 - `iterations`: The density of blocks/plants to spawn
 - `applyMode`: The logic to apply, can be `BONEMEAL` (on bonemealing, default), `SURFACE` (natural surface world generation) or `BOTH` (bonemealing + world generation)
+- `genDensity`: The amount of generation cycles for surface world generation, required when `applyMode` is `SURFACE` or `BOTH`
 - `biomes`: An optional list of whitelisted biomes, can be left empty to allow any
 - `dimensions`: An optional list of whitelisted dimensions, can be left empty to allow any
 - `spawnBlocks`: An array of blocks/plants by resource location to spawn on the specified `block`, **flowerEntry** picks a random flower
