@@ -9,6 +9,7 @@ import java.util.Random;
 public class BlockConfig
 {
     private final ResourceLocation replaceBlock;
+    private final ResourceLocation adjacentBlock;
     private final int iterations;
     private final ApplyMode applyMode;
     private final int genDensity;
@@ -17,9 +18,10 @@ public class BlockConfig
     private final List<SpawnBlock> spawnBlocks;
     private final int totalWeight;
 
-    public BlockConfig(ResourceLocation replaceBlock, int iterations, ApplyMode applyMode, int genDensity, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
+    public BlockConfig(ResourceLocation replaceBlock, ResourceLocation adjacentBlock, int iterations, ApplyMode applyMode, int genDensity, List<String> biomes, List<Integer> dimensions, List<SpawnBlock> spawnBlocks)
     {
         this.replaceBlock = replaceBlock;
+        this.adjacentBlock = adjacentBlock;
         this.iterations = iterations;
         this.applyMode = applyMode;
         this.genDensity = genDensity;
@@ -47,6 +49,11 @@ public class BlockConfig
     public ResourceLocation getReplaceBlock()
     {
         return replaceBlock;
+    }
+
+    public ResourceLocation getAdjacentBlock()
+    {
+        return adjacentBlock;
     }
 
     public int getIterations()

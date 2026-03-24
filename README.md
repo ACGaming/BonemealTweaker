@@ -2,39 +2,43 @@
 
 ###### Not bad to the bone!
 
-A simple mod that modifies the way plants are spawned when bonemeal is applied on blocks.
+A highly-configurable modpack utility that modifies the way plants are spawned when bonemeal is applied on blocks, also an efficient surface foliage generator.
 
-Configuration is handled by JSON-based config files per block in the `config/bonemealtweaker` directory. Example for the vanilla grass block (`vanilla_grass.json`):
+Configuration is handled by JSON-based config files per blocks in the `config/bonemealtweaker` directory. Example for the vanilla grass block (`vanilla_grass.json`):
 
 ```json
 {
-  "block": "minecraft:grass",
-  "replaceBlock": "minecraft:air",
-  "iterations": 128,
-  "applyMode": "BONEMEAL",
-  "genDensity": 0,
-  "biomes": [
-    "minecraft:plains",
-    "minecraft:forest"
-  ],
-  "dimensions": [
-    0
-  ],
-  "spawnBlocks": [
-    {
-      "block": "minecraft:tallgrass[type=tall_grass]",
-      "weight": 60
-    },
-    {
-      "block": "flowerEntry",
-      "weight": 20
-    }
-  ]
+    "blocks": [
+        "minecraft:grass"
+    ],
+    "replaceBlock": "minecraft:air",
+    "adjacentBlock": "minecraft:grass",
+    "iterations": 128,
+    "applyMode": "BONEMEAL",
+    "genDensity": 0,
+    "biomes": [
+        "minecraft:plains",
+        "minecraft:forest"
+    ],
+    "dimensions": [
+        0
+    ],
+    "spawnBlocks": [
+        {
+            "block": "minecraft:tallgrass[type=tall_grass]",
+            "weight": 60
+        },
+        {
+            "block": "flowerEntry",
+            "weight": 20
+        }
+    ]
 }
 ```
 
-- `block`: The **IGrowable** block to apply custom bonemeal logic on
-- `replaceBlock`: The block to be replaced with foliage (above `block`), can be omitted to replace air
+- `blocks`: An array of blocks (preferably **IGrowable** for full support) to apply custom bonemeal logic on
+- `replaceBlock`: An optional block to be replaced with foliage above `block`, can be omitted to replace air
+- `adjacentBlock`: An optional block required horizontally adjacent to `block`, can be omitted to allow any
 - `iterations`: The density of blocks/plants to spawn
 - `applyMode`: The logic to apply, can be `BONEMEAL` (on bonemealing, default), `SURFACE` (natural surface world generation) or `BOTH` (bonemealing + world generation)
 - `genDensity`: The amount of generation cycles for surface world generation, required when `applyMode` is `SURFACE` or `BOTH`

@@ -2,16 +2,17 @@ package mod.acgaming.bonemealtweaker.gen;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.IWorldGenerator;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import mod.acgaming.bonemealtweaker.BonemealTweaker;
 import mod.acgaming.bonemealtweaker.config.json.BlockConfig;
@@ -24,15 +25,16 @@ public class BTWorldGenerator implements IWorldGenerator
         if (world.getWorldInfo().getTerrainType() == WorldType.FLAT) return;
         int chunkXPos = chunkX * 16;
         int chunkZPos = chunkZ * 16;
-        Biome biome = world.getBiome(new BlockPos(chunkXPos + 8, 0, chunkZPos + 8));
+        String biome = world.getBiome(new BlockPos(chunkXPos + 8, 0, chunkZPos + 8)).getRegistryName().toString();
         int dimension = world.provider.getDimension();
-        for (ResourceLocation blockRL : BonemealTweaker.BLOCK_CONFIGS.keySet())
+        for (Map.Entry<ResourceLocation, List<BlockConfig>> entry : BonemealTweaker.BLOCK_CONFIGS.entrySet())
         {
-            List<BlockConfig> configs = BonemealTweaker.BLOCK_CONFIGS.get(blockRL);
+            ResourceLocation blockRL = entry.getKey();
+            List<BlockConfig> configs = entry.getValue();
             for (BlockConfig config : configs)
             {
                 if (!config.getApplyMode().isSurface()) continue;
-                if (!config.getBiomes().isEmpty() && !config.getBiomes().contains(biome.getRegistryName().toString())) continue;
+                if (!config.getBiomes().isEmpty() && !config.getBiomes().contains(biome)) continue;
                 if (!config.getDimensions().isEmpty() && !config.getDimensions().contains(dimension)) continue;
                 for (int i = 0; i < config.getGenDensity(); i++)
                 {
@@ -41,7 +43,7 @@ public class BTWorldGenerator implements IWorldGenerator
                     BlockPos topPos = world.getHeight(new BlockPos(x, 0, z));
                     BlockPos belowPos = topPos.down();
                     IBlockState belowState = world.getBlockState(belowPos);
-                    if (belowState.getBlock().getRegistryName().equals(blockRL))
+                    if (belowState.getBlock().getRegistryName().equals(blockRL) && checkAdjacentBlock(world, belowPos, config.getAdjacentBlock()))
                     {
                         IBlockState targetState = world.getBlockState(topPos);
                         if (config.getReplaceBlock() == null ? world.isAirBlock(topPos) : targetState.getBlock().getRegistryName().equals(config.getReplaceBlock()))
@@ -52,5 +54,15 @@ public class BTWorldGenerator implements IWorldGenerator
                 }
             }
         }
+    }
+
+    private boolean checkAdjacentBlock(World world, BlockPos pos, ResourceLocation adjacentBlock)
+    {
+        if (adjacentBlock == null) return true;
+        for (EnumFacing facing : EnumFacing.HORIZONTALS)
+        {
+            if (world.getBlockState(pos.offset(facing)).getBlock().getRegistryName().equals(adjacentBlock)) return true;
+        }
+        return false;
     }
 }

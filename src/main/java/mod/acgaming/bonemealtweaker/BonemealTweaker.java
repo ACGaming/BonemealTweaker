@@ -145,9 +145,17 @@ public class BonemealTweaker
             {
                 String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
                 JsonObject config = GSON.fromJson(json, JsonObject.class);
-                String blockName = config.get("block").getAsString();
-                ResourceLocation blockRL = new ResourceLocation(blockName);
+                List<ResourceLocation> blockRLs = new ArrayList<>();
+                if (config.has("block"))
+                {
+                    blockRLs.add(new ResourceLocation(config.get("block").getAsString()));
+                }
+                else
+                {
+                    config.get("blocks").getAsJsonArray().forEach(e -> blockRLs.add(new ResourceLocation(e.getAsString())));
+                }
                 ResourceLocation replaceBlock = config.has("replaceBlock") ? new ResourceLocation(config.get("replaceBlock").getAsString()) : null;
+                ResourceLocation adjacentBlock = config.has("adjacentBlock") ? new ResourceLocation(config.get("adjacentBlock").getAsString()) : null;
                 int iterations = config.get("iterations").getAsInt();
                 String applyModeStr = config.has("applyMode") ? config.get("applyMode").getAsString().toUpperCase() : "BONEMEAL";
                 BlockConfig.ApplyMode applyMode;
@@ -172,7 +180,11 @@ public class BonemealTweaker
                     int weight = obj.get("weight").getAsInt();
                     spawnBlocks.add(new SpawnBlock(block, weight));
                 });
-                BLOCK_CONFIGS.computeIfAbsent(blockRL, k -> new ArrayList<>()).add(new BlockConfig(replaceBlock, iterations, applyMode, genDensity, biomes, dimensions, spawnBlocks));
+                BlockConfig blockConfig = new BlockConfig(replaceBlock, adjacentBlock, iterations, applyMode, genDensity, biomes, dimensions, spawnBlocks);
+                for (ResourceLocation blockRL : blockRLs)
+                {
+                    BLOCK_CONFIGS.computeIfAbsent(blockRL, k -> new ArrayList<>()).add(blockConfig);
+                }
             }
             catch (IOException | JsonParseException e)
             {
