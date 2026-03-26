@@ -15,7 +15,7 @@ public class BTBonemealEvent
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onBonemeal(BonemealEvent event)
     {
-        if (BonemealTweaker.applyBlockPlacement(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack(), true))
+        if (BTPlacementLogic.applyBlockPlacement(event.getWorld(), event.getPos(), event.getBlock(), event.getEntityPlayer(), event.getStack(), true))
         {
             event.setResult(Event.Result.ALLOW);
         }

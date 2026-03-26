@@ -1,10 +1,10 @@
 package mod.acgaming.bonemealtweaker.config.json;
 
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.ResourceLocation;
-
 import java.util.List;
 import java.util.Random;
+
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.ResourceLocation;
 
 public class BlockConfig
 {
